@@ -15,11 +15,23 @@ By moving the order file generation and cloud storage logging out of the main AP
 3. **Resilience:** If cloud storage experiences latency, the order processing is isolated and won't block the customer's checkout experience.
 
 ```text
-   [Main Web API] ──(SQL Commit Success)──> [Invoke Azure Function]
-   │┌───────────────────────────────┴───────────────────────────────┐▼▼
-   [Generate Unique Order Number] [Serialize Order to JSON]
-   ││└───────────────────────────────┬───────────────────────────────┘▼
-   [Upload to Azure Blob Storage]
+   [Main Web API] 
+         │
+   (Order Saved to DB)
+         │
+         ▼
+  [Order Azure Function] <── (Creates the initial Order Blob)
+         │
+         ▼
+  [Azure Storage Queue] <── (Triggers/creates a message about the new blob)
+         │
+    (Queue Trigger)
+         │
+         ▼
+  [Payment Azure Function] <── (Listens to the queue)
+         │
+         ▼
+  (Marks the Blob File as PAID)
 
 ```
    ---
