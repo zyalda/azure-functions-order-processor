@@ -18,21 +18,15 @@ public class WatchNewOrders
     [Function(nameof(WatchNewOrders))]
     public async Task Run(
        
-        //sätter Connection till standardvärdet "AzureWebJobsStorage" = Azurite lokalt
         [BlobTrigger("orders/{name}", Connection = "AzureWebJobsStorage")] Stream stream, 
         string name)
-    {
-        // // Läser ut JSON-innehållet.
-        // using var blobStreamReader = new StreamReader(stream);
-        // var content = await blobStreamReader.ReadToEndAsync();
-        
+    {        
         _logger.LogInformation($"[BLOB-TRIGGER] Ny order upptäckt i Azurite! Filnamn: {name}");
 
         string connectionString = Environment.GetEnvironmentVariable("AzureWebJobsStorage") ?? "UseDevelopmentStorage=true";
 
         try
         {
-            // Anslut till Azurite-kö (döper kön till "payment-orders")
             var queueServiceClient = new QueueServiceClient(connectionString);
             var queueClient = queueServiceClient.GetQueueClient("payment-orders");
             
